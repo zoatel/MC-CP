@@ -1,1 +1,1 @@
-# MC-CP
+# Mobile Computing - Course Project
