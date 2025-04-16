@@ -1,5 +1,5 @@
 # Mobile Computing - Course Project
-Expo Link: https://snack.expo.dev/@amryounes/library-system
+Expo Link: https://snack.expo.dev/@ahmadhamdy/library-system
 
 Idea: An app that helps users book or reserve books from various libraries they are subscribed to.
 
