@@ -1,12 +1,17 @@
 import { useBookDetails } from '../../hooks/useBookDetails';
 import { BookDetailUI, CustomHeader } from '../../components/BookDetailUI';
 import { View, Text, ActivityIndicator, ScrollView } from "react-native";
+import { useRoute } from '@react-navigation/native';
+
 
 function BookDetailsScreen() {
-  // const route = useRoute();
-  // const { bookId, userId } = route.params;
+  const route = useRoute();
+  const title = route.params.title;
+  const author = route.params.author;
+  const category = route.params.category;
+
   const bookId = "fake";
-  const { book, loading } = useBookDetails(bookId);
+  const { book, loading } = useBookDetails(bookId, title, author, category);
   
   if (loading) {
     return (

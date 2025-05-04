@@ -6,7 +6,7 @@ const InputField = ({ label, placeholder, iconName, secureTextEntry = false, val
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputWrapper}>
+      <View style={[styles.inputWrapper, { borderColor: error ? 'red' : '#ddd' }]}>
         <TextInput
           style={styles.input}
           placeholder={placeholder}
@@ -37,7 +37,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 15,
   },

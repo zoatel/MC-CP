@@ -11,8 +11,9 @@ const BookItem = ({ book }) => {
       style={commonStyles.bookItem}
       onPress={() =>
         navigation.navigate('BookDetails', {
-          book,
           title: book.title,
+          author: book.author,
+          category: book.category,
         })
       }
     >

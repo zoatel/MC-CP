@@ -37,10 +37,11 @@ const handleSignUp = () => {
   if (!email.includes('@')) {
     setEmailError('Please enter a valid email address');
     return;
-  }
-  if (password !== confirmPassword) {
+  } else if (password !== confirmPassword) {
     setPasswordError('Passwords do not match');
     return;
+  } else {
+    navigation.navigate('Home');
   }
 
   // Handle sign up logic

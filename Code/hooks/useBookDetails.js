@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';  
-export function useBookDetails(bookId) {
+export function useBookDetails(bookId, title, author, category) {
 
   // Defining two hooks one for loading and one for book details 
   const [book, setBook] = useState(null);
@@ -11,9 +11,9 @@ export function useBookDetails(bookId) {
         const response = {
           // Simulate API call
           id: bookId,
-          title: "The Midnight Library",
-          author: "Matt Haig",
-          genre: "Fiction / Contemporary",
+          title: title,
+          author: author,
+          genre: category,
           cover: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1602190253i/52578297.jpg",
           available: true,
           copiesLeft: 12,

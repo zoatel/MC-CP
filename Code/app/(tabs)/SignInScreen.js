@@ -21,24 +21,38 @@ export default function SignInScreen ({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
   const validateEmail = (text) => {
     setEmail(text);
-    if (text.length > 0 && !text.includes('@')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (text.length > 0 && !emailRegex.test(text)) {
       setEmailError('Please enter a valid email address');
     } else {
       setEmailError('');
     }
   };
 
-  const handleSignIn = () => {
-    if (!email.includes('@')) {
-      setEmailError('Please enter a valid email address');
-      return;
+  const validatePassword = (text) => {
+    setPassword(text);
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+    if (text.length > 0 && !passwordRegex.test(text)) {
+      setPasswordError('Password must be at least 8 characters, include a capital letter, a lowercase letter, and a number');
+    } else {
+      setPasswordError('');
     }
-    else{
-      navigation.navigate('Details');
+  };
+  const handleSignIn = () => {
+    if (email.length > 0 && !email.includes('@')) {
+      setEmailError('Please enter a valid email address');
+    } else if (password.length < 11){
+      setPasswordError('Please enter a valid password');
+    }
+    else {
+      navigation.navigate('Home');
     }
     console.log('Remember me:', rememberMe);
     // Handle sign in logic
@@ -78,7 +92,8 @@ export default function SignInScreen ({ navigation }) {
         iconName="lock-closed-outline"
         secureTextEntry
         value={password}
-        onChangeText={setPassword}
+        onChangeText={validatePassword}
+        error={passwordError}
       />
 
       {/* Remember Me & Forgot Password */}
@@ -99,7 +114,7 @@ export default function SignInScreen ({ navigation }) {
       </View>
 
       {/* Sign In Button */}
-      <AuthButton title="Sign In" onPress={() => navigation.navigate('Home')} />
+      <AuthButton title="Sign In" onPress={handleSignIn} />
 
       {/* Divider */}
       <DividerWithText text="or continue with" />

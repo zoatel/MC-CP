@@ -25,7 +25,6 @@ const BooksTab = () => {
            (
             <BookItem
             book={item}
-              onPress={() => navigation.navigate('BookDetailsScreen')}
             />
           )
       }
