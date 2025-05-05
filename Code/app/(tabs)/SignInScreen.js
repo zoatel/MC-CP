@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,65 +8,117 @@ import {
   Platform,
   TouchableOpacity,
   Switch,
-} from 'react-native';
+  ActivityIndicator,
+} from "react-native";
+import {
+  auth,
+  googleProvider,
+  facebookProvider,
+} from "../../components/firebase";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import InputField from "../../components/InputField";
+import AuthButton from "../../components/AuthButton";
+import SocialLogin from "../../components/SocialLogin";
+import DividerWithText from "../../components/DividerWithText";
+import AuthFooter from "../../components/AuthFooter";
+import PolicyLinks from "../../components/PolicyLinks";
 
-import InputField from '../../components/InputField';
-import AuthButton from '../../components/AuthButton';
-import SocialLogin from '../../components/SocialLogin';
-import DividerWithText from '../../components/DividerWithText';
-import AuthFooter from '../../components/AuthFooter';
-import PolicyLinks from '../../components/PolicyLinks';
-
-export default function SignInScreen ({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+export default function SignInScreen({ navigation }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = (text) => {
     setEmail(text);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
     if (text.length > 0 && !emailRegex.test(text)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError("Please enter a valid email address");
     } else {
-      setEmailError('');
+      setEmailError("");
     }
   };
 
   const validatePassword = (text) => {
     setPassword(text);
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    // Removed password length validation, handled in sign-up
+  };
 
-    if (text.length > 0 && !passwordRegex.test(text)) {
-      setPasswordError('Password must be at least 8 characters, include a capital letter, a lowercase letter, and a number');
-    } else {
-      setPasswordError('');
+  const handleSignIn = async () => {
+    setLoading(true);
+    setEmailError("");
+    setPasswordError("");
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log("Remember me:", rememberMe);
+      navigation.navigate("Home");
+    } catch (error) {
+      console.log(error.code);
+      switch (error.code) {
+        case "auth/user-not-found":
+        case "auth/invalid-credential":
+          setPasswordError("Invalid email or password");
+          break;
+        case "auth/invalid-email":
+          setEmailError("Invalid email address");
+          break;
+        case "auth/too-many-requests":
+          setPasswordError("Too many attempts. Try again later.");
+          break;
+        default:
+          setPasswordError("An error occurred. Please try again.");
+          console.error(error);
+      }
+    } finally {
+      setLoading(false);
     }
   };
-  const handleSignIn = () => {
-    if (email.length > 0 && !email.includes('@')) {
-      setEmailError('Please enter a valid email address');
-    } else if (password.length < 11){
-      setPasswordError('Please enter a valid password');
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error("Google Sign-In Error:", error);
+      setPasswordError("Google sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    else {
-      navigation.navigate('Home');
+  };
+
+  const handleFacebookSignIn = async () => {
+    setLoading(true);
+    try {
+      await signInWithPopup(auth, facebookProvider);
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error("Facebook Sign-In Error:", error);
+      setPasswordError("Facebook sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    console.log('Remember me:', rememberMe);
-    // Handle sign in logic
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/images/logo.png')}
+          source={require("../../assets/images/logo.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -102,54 +154,62 @@ export default function SignInScreen ({ navigation }) {
           <Switch
             value={rememberMe}
             onValueChange={setRememberMe}
-            trackColor={{ false: '#ccc', true: '#007AFF' }}
-            thumbColor={rememberMe ? '#fff' : '#f4f3f4'}
+            trackColor={{ false: "#ccc", true: "#007AFF" }}
+            thumbColor={rememberMe ? "#fff" : "#f4f3f4"}
           />
           <Text style={styles.rememberMeText}>Remember me</Text>
         </View>
 
-        <TouchableOpacity onPress={() => console.log('Forgot Password')}>
+        <TouchableOpacity onPress={() => console.log("Forgot Password")}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
       </View>
 
       {/* Sign In Button */}
-      <AuthButton title="Sign In" onPress={handleSignIn} />
+      <AuthButton title="Sign In" onPress={handleSignIn} disabled={loading} />
+
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color="#007AFF"
+          style={styles.loading}
+        />
+      )}
 
       {/* Divider */}
       <DividerWithText text="or continue with" />
 
       {/* Social Login */}
       <SocialLogin
-        onFacebookPress={() => console.log('Facebook login')}
-        onGooglePress={() => console.log('Google login')}
+        onFacebookPress={handleFacebookSignIn}
+        onGooglePress={handleGoogleSignIn}
       />
 
       {/* Don't have account */}
       <AuthFooter
         text="Don't have an account?"
         linkText="Sign up"
-        onPress={() => navigation.navigate('SignUp')}
+        onPress={() => navigation.navigate("SignUp")}
       />
 
       {/* Footer Links */}
       <PolicyLinks
-        onPrivacyPress={() => console.log('Privacy Policy')}
-        onTermsPress={() => console.log('Terms of Service')}
+        onPrivacyPress={() => console.log("Privacy Policy")}
+        onTermsPress={() => console.log("Terms of Service")}
       />
     </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingHorizontal: 25,
     paddingVertical: 30,
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 30,
   },
   logo: {
@@ -158,30 +218,32 @@ const styles = StyleSheet.create({
   },
   introText: {
     fontSize: 18,
-    color: '#333',
-    textAlign: 'center',
+    color: "#333",
+    textAlign: "center",
     marginBottom: 30,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   optionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginVertical: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   rememberMeText: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#333',
+    color: "#333",
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '500',
+    color: "#007AFF",
+    fontWeight: "500",
+  },
+  loading: {
+    marginVertical: 10,
   },
 });
-
