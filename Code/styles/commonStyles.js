@@ -67,6 +67,8 @@ export const commonStyles = StyleSheet.create({
   // BooksTab Styles
   tabContainer: {
     flex: 1,
+    backgroundColor: '#fff', // Explicitly set light mode background
+    padding: 16,
   },
 
   subHeader: { 

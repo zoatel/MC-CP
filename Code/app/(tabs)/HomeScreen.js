@@ -1,18 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity
 } from 'react-native';
 import LibraryCard from '../../components/LibraryCard';
 import { Ionicons } from '@expo/vector-icons';
 import { commonStyles } from '@/styles/commonStyles';
+import { db } from '../../components/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 
 const HomeScreen = ({ navigation }) => {
-  const [libraries, setLibraries] = useState([
-    { id: '1', title: 'Fiction Library', books: 120 },
-    { id: '2', title: 'Science', books: 85 },
-    { id: '3', title: 'History', books: 94 },
-  ]);
+  const [libraries, setLibraries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'libraries'), (snapshot) => {
+      const libraryData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setLibraries(libraryData);
+    }, (error) => {
+      console.error('Error fetching libraries:', error);
+    });
+
+    return () => unsubscribe(); // Cleanup on unmount
+  }, []);
 
   const filteredLibraries = libraries.filter((lib) =>
     lib.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -48,7 +60,7 @@ const HomeScreen = ({ navigation }) => {
             <LibraryCard
               title={item.title}
               books={item.books}
-              onPress={() => navigation.navigate('Library', {libraryName: item.name})}
+              onPress={() => navigation.navigate('Library', {libraryName: item.title})}
             />
           )
         }
@@ -81,6 +93,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   }
 });
-
 
 export default HomeScreen;

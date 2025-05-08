@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
+  ScrollView,
   Text,
   Image,
   KeyboardAvoidingView,
@@ -9,19 +10,34 @@ import {
   TouchableOpacity,
   Switch,
   ActivityIndicator,
+  Alert,
 } from "react-native";
-import {
-  auth,
-  googleProvider,
-  facebookProvider,
-} from "../../components/firebase";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
+import { auth, googleProvider, facebookProvider } from "../../components/firebase";
+import { signInWithEmailAndPassword, signInWithPopup, sendPasswordResetEmail } from "firebase/auth";
 import InputField from "../../components/InputField";
 import AuthButton from "../../components/AuthButton";
 import SocialLogin from "../../components/SocialLogin";
 import DividerWithText from "../../components/DividerWithText";
 import AuthFooter from "../../components/AuthFooter";
 import PolicyLinks from "../../components/PolicyLinks";
+
+// Note: expo-notifications requires a development build for full functionality (push notifications).
+// In Expo Go, only local notifications are supported, which may introduce delays.
+// To set up a development build:
+// 1. Install EAS CLI: npm install -g eas-cli
+// 2. Run: eas build --platform all --profile development
+// 3. Use the development client: npx expo start --dev-client
+// See https://docs.expo.dev/develop/development-builds/introduction/
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function SignInScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -30,6 +46,73 @@ export default function SignInScreen({ navigation }) {
   const [passwordError, setPasswordError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Check if running in Expo Go
+    const isExpoGo = Constants.appOwnership === "expo";
+    console.log("Expo environment:", isExpoGo ? "Expo Go" : "Development Build");
+    if (isExpoGo) {
+      console.warn("Running in Expo Go: Push notifications are not supported, and local notifications may be delayed.");
+    } else {
+      registerForPushNotificationsAsync();
+    }
+
+    // Test notification on mount to verify functionality
+    scheduleNotification("Test Notification", "This is a test notification to verify setup.", { screen: "SignIn" });
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      console.log("Notification response received:", data);
+      if (data && data.screen) {
+        try {
+          navigation.navigate(data.screen);
+        } catch (error) {
+          console.error("Navigation error from notification:", error);
+        }
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  async function registerForPushNotificationsAsync() {
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      console.log("Existing notification permission status:", existingStatus);
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+        console.log("Requested notification permission status:", finalStatus);
+      }
+      if (finalStatus !== "granted") {
+        Alert.alert("Permission required", "Please enable notifications in settings to receive updates.");
+        return;
+      }
+      console.log("Notification permissions granted.");
+    } catch (error) {
+      console.error("Error registering for push notifications:", error);
+      Alert.alert("Error", "Failed to register for notifications. Please check your settings.");
+    }
+  }
+
+  async function scheduleNotification(title, body, data = {}) {
+    try {
+      console.log("Scheduling notification:", { title, body, data });
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          data,
+        },
+        trigger: { seconds: 1 },
+      });
+      console.log("Notification scheduled successfully.");
+    } catch (error) {
+      console.error("Error scheduling notification:", error);
+      Alert.alert("Error", "Failed to schedule notification. Please check your notification settings.");
+    }
+  }
 
   const validateEmail = (text) => {
     setEmail(text);
@@ -43,7 +126,6 @@ export default function SignInScreen({ navigation }) {
 
   const validatePassword = (text) => {
     setPassword(text);
-    // Removed password length validation, handled in sign-up
   };
 
   const handleSignIn = async () => {
@@ -61,9 +143,10 @@ export default function SignInScreen({ navigation }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Remember me:", rememberMe);
+      await scheduleNotification("Welcome Back!", `Successfully signed in as ${email}`, { screen: "Home" });
       navigation.navigate("Home");
     } catch (error) {
-      console.log(error.code);
+      console.log("Sign-in error code:", error.code);
       switch (error.code) {
         case "auth/user-not-found":
         case "auth/invalid-credential":
@@ -88,6 +171,7 @@ export default function SignInScreen({ navigation }) {
     setLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
+      await scheduleNotification("Welcome Back!", "Successfully signed in with Google", { screen: "Home" });
       navigation.navigate("Home");
     } catch (error) {
       console.error("Google Sign-In Error:", error);
@@ -101,10 +185,40 @@ export default function SignInScreen({ navigation }) {
     setLoading(true);
     try {
       await signInWithPopup(auth, facebookProvider);
+      await scheduleNotification("Welcome Back!", "Successfully signed in with Facebook", { screen: "Home" });
       navigation.navigate("Home");
     } catch (error) {
       console.error("Facebook Sign-In Error:", error);
       setPasswordError("Facebook sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setEmailError("Please enter your email address to reset your password");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      await scheduleNotification("Password Reset", "A reset link has been sent to your email.", { screen: "SignIn" });
+      Alert.alert("Success", "Password reset email sent. Check your inbox!");
+    } catch (error) {
+      console.error("Forgot Password Error:", error.code);
+      switch (error.code) {
+        case "auth/invalid-email":
+          setEmailError("Invalid email address");
+          break;
+        case "auth/user-not-found":
+          setEmailError("No account found with this email");
+          break;
+        default:
+          setEmailError("Failed to send reset email. Please try again.");
+          console.error(error);
+      }
     } finally {
       setLoading(false);
     }
@@ -115,90 +229,96 @@ export default function SignInScreen({ navigation }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      {/* Logo */}
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../../assets/images/logo.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* Intro statement */}
-      <Text style={styles.introText}>Welcome back!</Text>
-
-      {/* Form Fields */}
-      <InputField
-        label="Email address"
-        placeholder="Enter your email"
-        iconName="mail-outline"
-        value={email}
-        onChangeText={validateEmail}
-        keyboardType="email-address"
-        error={emailError}
-      />
-
-      <InputField
-        label="Password"
-        placeholder="Enter your password"
-        iconName="lock-closed-outline"
-        secureTextEntry
-        value={password}
-        onChangeText={validatePassword}
-        error={passwordError}
-      />
-
-      {/* Remember Me & Forgot Password */}
-      <View style={styles.optionsContainer}>
-        <View style={styles.rememberMeContainer}>
-          <Switch
-            value={rememberMe}
-            onValueChange={setRememberMe}
-            trackColor={{ false: "#ccc", true: "#007AFF" }}
-            thumbColor={rememberMe ? "#fff" : "#f4f3f4"}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Logo */}
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/images/logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
           />
-          <Text style={styles.rememberMeText}>Remember me</Text>
         </View>
 
-        <TouchableOpacity onPress={() => console.log("Forgot Password")}>
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Intro statement */}
+        <Text style={styles.introText}>Welcome back!</Text>
 
-      {/* Sign In Button */}
-      <AuthButton title="Sign In" onPress={handleSignIn} disabled={loading} />
-
-      {loading && (
-        <ActivityIndicator
-          size="large"
-          color="#007AFF"
-          style={styles.loading}
+        {/* Form Fields */}
+        <InputField
+          label="Email address"
+          placeholder="Enter your email"
+          iconName="mail-outline"
+          value={email}
+          onChangeText={validateEmail}
+          keyboardType="email-address"
+          error={emailError}
         />
-      )}
 
-      {/* Divider */}
-      <DividerWithText text="or continue with" />
+        <InputField
+          label="Password"
+          placeholder="Enter your password"
+          iconName="lock-closed-outline"
+          secureTextEntry
+          value={password}
+          onChangeText={validatePassword}
+          error={passwordError}
+        />
 
-      {/* Social Login */}
-      <SocialLogin
-        onFacebookPress={handleFacebookSignIn}
-        onGooglePress={handleGoogleSignIn}
-      />
+        {/* Remember Me & Forgot Password */}
+        <View style={styles.optionsContainer}>
+          <View style={styles.rememberMeContainer}>
+            <Switch
+              value={rememberMe}
+              onValueChange={setRememberMe}
+              trackColor={{ false: "#ccc", true: "#007AFF" }}
+              thumbColor={rememberMe ? "#fff" : "#f4f3f4"}
+            />
+            <Text style={styles.rememberMeText}>Remember me</Text>
+          </View>
 
-      {/* Don't have account */}
-      <AuthFooter
-        text="Don't have an account?"
-        linkText="Sign up"
-        onPress={() => navigation.navigate("SignUp")}
-      />
+          <TouchableOpacity onPress={handleForgotPassword}>
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Footer Links */}
-      <PolicyLinks
-        onPrivacyPress={() => console.log("Privacy Policy")}
-        onTermsPress={() => console.log("Terms of Service")}
-      />
+        {/* Sign In Button */}
+        <AuthButton title="Sign In" onPress={handleSignIn} disabled={loading} />
+
+        {loading && (
+          <ActivityIndicator
+            size="large"
+            color="#007AFF"
+            style={styles.loading}
+          />
+        )}
+
+        {/* Divider */}
+        <DividerWithText text="or continue with" />
+
+        {/* Social Login */}
+        <SocialLogin
+          onFacebookPress={handleFacebookSignIn}
+          onGooglePress={handleGoogleSignIn}
+        />
+
+        {/* Don't have account */}
+        <AuthFooter
+          text="Don't have an account?"
+          linkText="Sign up"
+          onPress={() => navigation.navigate("SignUp")}
+        />
+
+        {/* Footer Links */}
+        <PolicyLinks
+          onPrivacyPress={() => console.log("Privacy Policy")}
+          onTermsPress={() => console.log("Terms of Service")}
+        />
+      </ScrollView>
     </KeyboardAvoidingView>
   );
+
 }
 
 const styles = StyleSheet.create({

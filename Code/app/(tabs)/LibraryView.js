@@ -10,7 +10,12 @@ const LibraryView = ({ route }) => {
   const { libraryName } = route.params;
 
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: { backgroundColor: '#fff' }, // Light mode for tab bar
+      }}
+    >
       <Tab.Screen
         name="Books"
         children={() => <BooksTab libraryName={libraryName} />}

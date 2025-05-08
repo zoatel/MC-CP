@@ -7,6 +7,17 @@ import ProfileScreen from './ProfileScreen';
 import AddLibraryScreen from './AddLibraryScreen';
 import { Ionicons } from '@expo/vector-icons';
 
+import { DefaultTheme } from '@react-navigation/native';
+
+const LightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#fff', // Force light mode background
+    card: '#fff',
+    text: '#333',
+  },
+};
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -26,7 +37,7 @@ function Tabs() {
 
 export default function my_libraries() {
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={LightTheme}>
       <Stack.Navigator>
         <Stack.Screen name="Main" component={Tabs} options={{ headerShown: false }} />
         <Stack.Screen name="AddLibrary" component={AddLibraryScreen} options={{ title: "Add Library" }} />

@@ -15,7 +15,7 @@ const BooksTab = () => {
   );
 
   return (
-    <View style={commonStyles.tabContainer}>
+    <View style={[commonStyles.tabContainer, { backgroundColor: '#fff' }]}>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <FlatList
         data={filteredBooks}
