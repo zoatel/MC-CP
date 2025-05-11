@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, FlatList, StyleSheet, ScrollView } from "react-native";
+import { View, FlatList, StyleSheet } from "react-native";
 import SearchBar from "../../components/SearchBar";
 import BookItem from "../../components/BookItem";
 import { commonStyles } from "../../styles/commonStyles";
@@ -63,7 +63,6 @@ const BooksTab = ({ libraryId, libraryName }) => {
         numColumns={2}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => <BookItem book={item} />}
-        style={{ flex: 1 }} // Add this to ensure it takes available space
       />
     </View>
   );
