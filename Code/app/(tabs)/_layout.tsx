@@ -32,14 +32,13 @@ type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Define a custom light theme for React Navigation
 const LightTheme = {
   ...DefaultTheme,
   dark: false,
   colors: {
     ...DefaultTheme.colors,
     primary: "#2563EB",
-    background: "#FFFFFF",
+    background: "#F5F5F5", // Match FlatList background
     card: "#FFFFFF",
     text: "#1A1A1A",
     border: "#E5E5E5",
@@ -48,13 +47,13 @@ const LightTheme = {
 };
 
 export default function TabLayout() {
-  const colorScheme = "light"; // Force light mode
+  const colorScheme = "light";
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
-        translucent={false} // Disable translucency to ensure the background is solid
-        backgroundColor="#FFFFFF"
+        translucent={false}
+        backgroundColor="#F5F5F5" // Match FlatList background
         barStyle="dark-content"
       />
       <View style={styles.container}>
@@ -81,7 +80,7 @@ export default function TabLayout() {
             options={({ route }) => ({
               headerTitle: route.params.libraryName || "Library",
               headerStyle: {
-                backgroundColor: "#FFFFFF",
+                backgroundColor: "#F5F5F5", // Match FlatList background
                 elevation: 0,
                 shadowOpacity: 0,
                 borderBottomWidth: 1,
@@ -100,7 +99,7 @@ export default function TabLayout() {
             options={({ route }) => ({
               headerTitle: route.params.title || "Book Details",
               headerStyle: {
-                backgroundColor: "#FFFFFF",
+                backgroundColor: "#F5F5F5", // Match FlatList background
                 elevation: 0,
                 shadowOpacity: 0,
                 borderBottomWidth: 1,
@@ -122,10 +121,10 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F5F5F5",
   },
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F5F5F5",
   },
 });
