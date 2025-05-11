@@ -1,18 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { View, FlatList, StyleSheet } from "react-native";
-import SearchBar from "../../components/SearchBar";
-import BookItem from "../../components/BookItem";
-import { commonStyles } from "../../styles/commonStyles";
-import { db } from "../../components/firebase";
-import { collection, onSnapshot, doc } from "firebase/firestore";
-
 const BooksTab = ({ libraryId, libraryName }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [bookIds, setBookIds] = useState([]);
   const [allBooks, setAllBooks] = useState([]);
 
   useEffect(() => {
-    // Fetch book IDs from the library's books subcollection
     const unsubscribeBooks = onSnapshot(
       collection(doc(db, "libraries", libraryId), "books"),
       (snapshot) => {
@@ -24,7 +15,6 @@ const BooksTab = ({ libraryId, libraryName }) => {
       }
     );
 
-    // Fetch all books from the root books collection
     const unsubscribeAllBooks = onSnapshot(
       collection(db, "books"),
       (snapshot) => {
@@ -45,7 +35,6 @@ const BooksTab = ({ libraryId, libraryName }) => {
     };
   }, [libraryId]);
 
-  // Filter books based on library book IDs and search query
   const filteredBooks = allBooks.filter(
     (book) =>
       bookIds.includes(book.id) &&
@@ -63,6 +52,7 @@ const BooksTab = ({ libraryId, libraryName }) => {
         numColumns={2}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => <BookItem book={item} />}
+        style={{ flex: 1, backgroundColor: "#F5F5F5" }} // Match background
       />
     </View>
   );
@@ -71,11 +61,11 @@ const BooksTab = ({ libraryId, libraryName }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5", // Soft gray background
+    backgroundColor: "#F5F5F5",
   },
   listContent: {
     padding: 10,
-    paddingBottom: 20,
+    paddingBottom: 70, // Adjust to match tab bar height + buffer
   },
 });
 
