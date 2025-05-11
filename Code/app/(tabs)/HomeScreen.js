@@ -16,7 +16,7 @@ import { collection, onSnapshot, doc } from "firebase/firestore";
 const HomeScreen = ({ navigation }) => {
   const [libraries, setLibraries] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const userId = auth.currentUser?.uid; // Get current user's ID
+  const userId = auth.currentUser?.uid;
 
   useEffect(() => {
     if (!userId) return;
@@ -45,7 +45,7 @@ const HomeScreen = ({ navigation }) => {
       }
     );
 
-    return () => unsubscribe(); // Cleanup on unmount
+    return () => unsubscribe();
   }, [userId]);
 
   const filteredLibraries = libraries.filter((lib) =>
@@ -85,7 +85,10 @@ const HomeScreen = ({ navigation }) => {
               title={item.title}
               books={item.books}
               onPress={() =>
-                navigation.navigate("Library", { libraryName: item.title })
+                navigation.navigate("Library", {
+                  libraryId: item.id,
+                  libraryName: item.title,
+                })
               }
             />
           )

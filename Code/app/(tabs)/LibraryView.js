@@ -1,24 +1,26 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import BooksTab from './BooksTab';
-import SavedTab from './SavedTab';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import BooksTab from "./BooksTab";
+import RentedTab from "./RentedTab"; // Updated import
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 
 const LibraryView = ({ route }) => {
-  const { libraryName } = route.params;
+  const { libraryId, libraryName } = route.params;
 
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: '#fff' }, // Light mode for tab bar
+        tabBarStyle: { backgroundColor: "#fff" },
       }}
     >
       <Tab.Screen
         name="Books"
-        children={() => <BooksTab libraryName={libraryName} />}
+        children={() => (
+          <BooksTab libraryId={libraryId} libraryName={libraryName} />
+        )}
         options={{
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="book" size={24} color={color} />
@@ -26,11 +28,11 @@ const LibraryView = ({ route }) => {
         }}
       />
       <Tab.Screen
-        name="Saved"
-        children={() => <SavedTab libraryName={libraryName} />}
+        name="Rented" // Renamed from "Saved" to "Rented"
+        children={() => <RentedTab libraryName={libraryName} />}
         options={{
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="bookmark" size={24} color={color} />
+            <MaterialCommunityIcons name="book-open" size={24} color={color} /> // Updated icon for "Rented"
           ),
         }}
       />
@@ -39,5 +41,3 @@ const LibraryView = ({ route }) => {
 };
 
 export default LibraryView;
-
-

@@ -1,36 +1,82 @@
-import React, { useState } from 'react';
-import { View, FlatList } from 'react-native';
-import SearchBar from '../../components/SearchBar';
-import { books } from '../../data/booksData'; // Import mock data
-import BookItem from '../../components/BookItem';
-import { commonStyles } from '../../styles/commonStyles';
+import React, { useState, useEffect } from "react";
+import { View, FlatList, StyleSheet } from "react-native";
+import SearchBar from "../../components/SearchBar";
+import BookItem from "../../components/BookItem";
+import { commonStyles } from "../../styles/commonStyles";
+import { db } from "../../components/firebase";
+import { collection, onSnapshot, doc } from "firebase/firestore";
 
-const BooksTab = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+const BooksTab = ({ libraryId, libraryName }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [bookIds, setBookIds] = useState([]);
+  const [allBooks, setAllBooks] = useState([]);
 
-  const filteredBooks = books.filter(book =>
-    book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    book.category.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    // Fetch book IDs from the library's books subcollection
+    const unsubscribeBooks = onSnapshot(
+      collection(doc(db, "libraries", libraryId), "books"),
+      (snapshot) => {
+        const ids = snapshot.docs.map((doc) => doc.id);
+        setBookIds(ids);
+      },
+      (error) => {
+        console.error("Error fetching library books:", error);
+      }
+    );
+
+    // Fetch all books from the root books collection
+    const unsubscribeAllBooks = onSnapshot(
+      collection(db, "books"),
+      (snapshot) => {
+        const booksData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setAllBooks(booksData);
+      },
+      (error) => {
+        console.error("Error fetching all books:", error);
+      }
+    );
+
+    return () => {
+      unsubscribeBooks();
+      unsubscribeAllBooks();
+    };
+  }, [libraryId]);
+
+  // Filter books based on library book IDs and search query
+  const filteredBooks = allBooks.filter(
+    (book) =>
+      bookIds.includes(book.id) &&
+      (book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.genre.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
-    <View style={[commonStyles.tabContainer, { backgroundColor: '#fff' }]}>
+    <View style={styles.container}>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <FlatList
         data={filteredBooks}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         numColumns={2}
-        renderItem={({ item }) => 
-           (
-            <BookItem
-            book={item}
-            />
-          )
-      }
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => <BookItem book={item} />}
       />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F5", // Soft gray background
+  },
+  listContent: {
+    padding: 10,
+    paddingBottom: 20,
+  },
+});
 
 export default BooksTab;

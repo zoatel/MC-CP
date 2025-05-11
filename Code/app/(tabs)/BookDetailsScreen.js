@@ -1,35 +1,58 @@
-import { useBookDetails } from '../../hooks/useBookDetails';
-import { BookDetailUI, CustomHeader } from '../../components/BookDetailUI';
+import { useState, useEffect } from "react";
+import { BookDetailUI } from "../../components/BookDetailUI";
 import { View, Text, ActivityIndicator, ScrollView } from "react-native";
-import { useRoute } from '@react-navigation/native';
-
+import { useRoute } from "@react-navigation/native";
+import { db } from "../../components/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 function BookDetailsScreen() {
   const route = useRoute();
-  const title = route.params.title;
-  const author = route.params.author;
-  const category = route.params.category;
+  const { bookId, title, author, category } = route.params; // Get bookId from navigation
+  const [book, setBook] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const bookId = "fake";
-  const { book, loading } = useBookDetails(bookId, title, author, category);
-  
+  useEffect(() => {
+    const fetchBookDetails = async () => {
+      try {
+        const bookDoc = await getDoc(doc(db, "books", bookId));
+        if (bookDoc.exists()) {
+          setBook({ id: bookDoc.id, ...bookDoc.data() });
+        } else {
+          setError("No book details found");
+        }
+      } catch (err) {
+        console.error("Error fetching book details:", err);
+        setError("Failed to load book details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookDetails();
+  }, [bookId]);
+
   if (loading) {
     return (
-      
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
-  if (book == null) {
-  return <Text>No book details available</Text>;
-}
-   return (
+
+  if (error) {
+    return <Text>{error}</Text>;
+  }
+
+  if (!book) {
+    return <Text>No book details available</Text>;
+  }
+
+  return (
     <ScrollView style={{ flex: 1, padding: 16 }}>
       <BookDetailUI book={book} />
     </ScrollView>
   );
-
 }
 
-export default BookDetailsScreen; 
+export default BookDetailsScreen;
