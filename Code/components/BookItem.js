@@ -10,9 +10,9 @@ import { useNavigation } from "@react-navigation/native";
 
 const BookItem = ({ book }) => {
   const navigation = useNavigation();
-  const { width } = Dimensions.get("window"); // Get screen width for responsive design
-  const cardWidth = (width - 30) / 2; // Adjust for margin and two-column layout
-  const aspectRatio = 1.5; // Adjust this based on the typical aspect ratio of your book covers (e.g., 3:2)
+  const { width } = Dimensions.get("window");
+  const cardWidth = (width - 30) / 2;
+  const aspectRatio = 1.5;
 
   return (
     <TouchableOpacity

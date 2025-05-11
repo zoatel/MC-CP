@@ -14,17 +14,13 @@ const LibraryView = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <StatusBar
-        translucent={false}
-        backgroundColor="#FFFFFF"
-        barStyle="dark-content"
-      />
+      <StatusBar translucent={false} backgroundColor="#FFFFFF" />
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
             backgroundColor: "#FFFFFF",
-            borderTopColor: "#E5E5E5",
+            borderTopColor: "#FFFFFF",
           },
           tabBarActiveTintColor: "#2563EB",
           tabBarInactiveTintColor: "#6B7280",

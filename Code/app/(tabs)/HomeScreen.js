@@ -6,12 +6,13 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  SafeAreaView,
 } from "react-native";
 import LibraryCard from "../../components/LibraryCard";
 import { Ionicons } from "@expo/vector-icons";
 import { commonStyles } from "@/styles/commonStyles";
 import { db, auth } from "../../components/firebase";
-import { collection, onSnapshot, doc, getDocs } from "firebase/firestore"; // Add getDocs
+import { collection, onSnapshot, doc, getDocs } from "firebase/firestore";
 
 const HomeScreen = ({ navigation }) => {
   const [libraries, setLibraries] = useState([]);
@@ -68,54 +69,60 @@ const HomeScreen = ({ navigation }) => {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={commonStyles.headerTitle}>My Libraries</Text>
-      <Text style={commonStyles.subHeader}>
-        Your subscribed libraries and collections
-      </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Text style={commonStyles.headerTitle}>My Libraries</Text>
+        <Text style={commonStyles.subHeader}>
+          Your subscribed libraries and collections
+        </Text>
 
-      <View style={commonStyles.searchContainer}>
-        <TextInput
-          placeholder="  Search libraries..."
-          style={commonStyles.searchInput}
-          value={searchTerm}
-          onChangeText={setSearchTerm}
+        <View style={commonStyles.searchContainer}>
+          <TextInput
+            placeholder="  Search libraries..."
+            style={commonStyles.searchInput}
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+          />
+          <Ionicons name="search" size={20} color="#888" />
+        </View>
+
+        <FlatList
+          data={[...filteredLibraries, { id: "add", isAddButton: true }]}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) =>
+            item.isAddButton ? (
+              <TouchableOpacity
+                style={styles.addCard}
+                onPress={() => navigation.navigate("AddLibrary")}
+              >
+                <Ionicons name="add" size={32} color="#555" />
+              </TouchableOpacity>
+            ) : (
+              <LibraryCard
+                title={item.title}
+                books={item.books}
+                onPress={() =>
+                  navigation.navigate("Library", {
+                    libraryId: item.id,
+                    libraryName: item.title,
+                  })
+                }
+              />
+            )
+          }
+          numColumns={2}
+          contentContainerStyle={styles.list}
         />
-        <Ionicons name="search" size={20} color="#888" />
       </View>
-
-      <FlatList
-        data={[...filteredLibraries, { id: "add", isAddButton: true }]}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) =>
-          item.isAddButton ? (
-            <TouchableOpacity
-              style={styles.addCard}
-              onPress={() => navigation.navigate("AddLibrary")}
-            >
-              <Ionicons name="add" size={32} color="#555" />
-            </TouchableOpacity>
-          ) : (
-            <LibraryCard
-              title={item.title}
-              books={item.books}
-              onPress={() =>
-                navigation.navigate("Library", {
-                  libraryId: item.id,
-                  libraryName: item.title,
-                })
-              }
-            />
-          )
-        }
-        numColumns={2}
-        contentContainerStyle={styles.list}
-      />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   subHeader: {
     fontSize: 14,
