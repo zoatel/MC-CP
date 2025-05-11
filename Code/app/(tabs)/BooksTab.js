@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, FlatList, StyleSheet } from "react-native";
+import { View, FlatList, StyleSheet, ScrollView } from "react-native";
 import SearchBar from "../../components/SearchBar";
 import BookItem from "../../components/BookItem";
 import { commonStyles } from "../../styles/commonStyles";
@@ -55,16 +55,18 @@ const BooksTab = ({ libraryId, libraryName }) => {
   );
 
   return (
-    <View style={styles.container}>
-      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <FlatList
-        data={filteredBooks}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => <BookItem book={item} />}
-      />
-    </View>
+    <ScrollView>
+      <View style={styles.container}>
+        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <FlatList
+          data={filteredBooks}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => <BookItem book={item} />}
+        />
+      </View>
+    </ScrollView>
   );
 };
 
