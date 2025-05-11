@@ -95,7 +95,11 @@ export default function TabLayout() {
               },
             })}
           />
-          <Stack.Screen name="BookDetails" component={BookDetailsScreen} />
+          <Stack.Screen
+            name="BookDetails"
+            component={BookDetailsScreen}
+            options={{ headerShown: false }}
+          />
         </Stack.Navigator>
       </View>
     </SafeAreaView>
