@@ -1,3 +1,11 @@
+import React, { useState, useEffect } from "react";
+import { View, FlatList, StyleSheet } from "react-native";
+import SearchBar from "../../components/SearchBar";
+import BookItem from "../../components/BookItem";
+import { commonStyles } from "../../styles/commonStyles";
+import { db } from "../../components/firebase";
+import { collection, onSnapshot, doc } from "firebase/firestore";
+
 const BooksTab = ({ libraryId, libraryName }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [bookIds, setBookIds] = useState([]);
@@ -52,7 +60,7 @@ const BooksTab = ({ libraryId, libraryName }) => {
         numColumns={2}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => <BookItem book={item} />}
-        style={{ flex: 1, backgroundColor: "#F5F5F5" }} // Match background
+        style={{ flex: 1, backgroundColor: "#F5F5F5" }}
       />
     </View>
   );
@@ -65,7 +73,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 10,
-    paddingBottom: 70, // Adjust to match tab bar height + buffer
+    paddingBottom: 70,
   },
 });
 
