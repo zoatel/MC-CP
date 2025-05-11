@@ -1,15 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Alert, TouchableOpacity, Dimensions } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { Ionicons } from "@expo/vector-icons";
+import { db, auth } from "../../components/firebase";
+import { doc, setDoc } from "firebase/firestore";
 
-const { width: screenWidth } = Dimensions.get('window');
-const cameraSize = screenWidth - 40; // Adjust for padding
+const { width: screenWidth } = Dimensions.get("window");
+const cameraSize = screenWidth - 40;
 
 const AddLibraryScreen = ({ navigation }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
-  const [scannedData, setScannedData] = useState(null);
+  const userId = auth.currentUser?.uid;
 
   useEffect(() => {
     if (!permission) return;
@@ -18,24 +28,22 @@ const AddLibraryScreen = ({ navigation }) => {
     }
   }, [permission]);
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = async ({ type, data }) => {
     if (!scanned) {
       setScanned(true);
-      setScannedData(data);
-      Alert.alert(
-        'QR Code Scanned',
-        `Library Code: ${data}\nWould you like to add this library?`,
-        [
-          { text: 'Cancel', onPress: () => setScanned(false), style: 'cancel' },
-          {
-            text: 'Add',
-            onPress: () => {
-              console.log('Library Code:', data); // Log for now, add save logic here
-              navigation.goBack(); // Go back to home
-            },
-          },
-        ]
-      );
+      try {
+        // Add library ID to user's userLibraries subcollection
+        await setDoc(doc(db, "users", userId, "userLibraries", data), {});
+        Alert.alert(
+          "Library Added",
+          `Library with ID ${data} has been added to your collection.`,
+          [{ text: "OK", onPress: () => navigation.goBack() }]
+        );
+      } catch (error) {
+        console.error("Error adding library:", error);
+        Alert.alert("Error", "Failed to add library. Please try again.");
+        setScanned(false);
+      }
     }
   };
 
@@ -70,7 +78,7 @@ const AddLibraryScreen = ({ navigation }) => {
           style={styles.camera}
           facing="back"
           barcodeScannerSettings={{
-            barcodeTypes: ['qr'],
+            barcodeTypes: ["qr"],
           }}
           onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         />
@@ -101,59 +109,59 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
   },
   title: {
     fontSize: 24,
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   message: {
     fontSize: 16,
-    color: '#888',
-    textAlign: 'center',
+    color: "#888",
+    textAlign: "center",
     marginBottom: 20,
   },
   cameraContainer: {
     width: cameraSize,
     height: cameraSize,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: 10,
     marginBottom: 20,
-    position: 'relative',
-    alignSelf: 'center',
+    position: "relative",
+    alignSelf: "center",
   },
   camera: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
   scanArea: {
     width: cameraSize * 0.7,
     height: cameraSize * 0.7,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: "#fff",
     borderRadius: 10,
   },
   scanAgainButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     marginBottom: 20,
   },
   scanAgainText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 

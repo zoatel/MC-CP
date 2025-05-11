@@ -1,30 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity
-} from 'react-native';
-import LibraryCard from '../../components/LibraryCard';
-import { Ionicons } from '@expo/vector-icons';
-import { commonStyles } from '@/styles/commonStyles';
-import { db } from '../../components/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import LibraryCard from "../../components/LibraryCard";
+import { Ionicons } from "@expo/vector-icons";
+import { commonStyles } from "@/styles/commonStyles";
+import { db, auth } from "../../components/firebase";
+import { collection, onSnapshot, doc } from "firebase/firestore";
 
 const HomeScreen = ({ navigation }) => {
   const [libraries, setLibraries] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const userId = auth.currentUser?.uid; // Get current user's ID
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'libraries'), (snapshot) => {
-      const libraryData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setLibraries(libraryData);
-    }, (error) => {
-      console.error('Error fetching libraries:', error);
-    });
+    if (!userId) return;
+
+    const unsubscribe = onSnapshot(
+      collection(doc(db, "users", userId), "userLibraries"),
+      (snapshot) => {
+        const userLibraryIds = snapshot.docs.map((doc) => doc.id);
+        if (userLibraryIds.length > 0) {
+          onSnapshot(collection(db, "libraries"), (libSnapshot) => {
+            const allLibraries = libSnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            const userLibraries = allLibraries.filter((lib) =>
+              userLibraryIds.includes(lib.id)
+            );
+            setLibraries(userLibraries);
+          });
+        } else {
+          setLibraries([]);
+        }
+      },
+      (error) => {
+        console.error("Error fetching user libraries:", error);
+      }
+    );
 
     return () => unsubscribe(); // Cleanup on unmount
-  }, []);
+  }, [userId]);
 
   const filteredLibraries = libraries.filter((lib) =>
     lib.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -33,7 +55,9 @@ const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={commonStyles.headerTitle}>My Libraries</Text>
-      <Text style={commonStyles.subHeader}>Your subscribed libraries and collections</Text>
+      <Text style={commonStyles.subHeader}>
+        Your subscribed libraries and collections
+      </Text>
 
       <View style={commonStyles.searchContainer}>
         <TextInput
@@ -46,13 +70,13 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       <FlatList
-        data={[...filteredLibraries, { id: 'add', isAddButton: true }]}
+        data={[...filteredLibraries, { id: "add", isAddButton: true }]}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) =>
           item.isAddButton ? (
             <TouchableOpacity
               style={styles.addCard}
-              onPress={() => navigation.navigate('AddLibrary')}
+              onPress={() => navigation.navigate("AddLibrary")}
             >
               <Ionicons name="add" size={32} color="#555" />
             </TouchableOpacity>
@@ -60,7 +84,9 @@ const HomeScreen = ({ navigation }) => {
             <LibraryCard
               title={item.title}
               books={item.books}
-              onPress={() => navigation.navigate('Library', {libraryName: item.title})}
+              onPress={() =>
+                navigation.navigate("Library", { libraryName: item.title })
+              }
             />
           )
         }
@@ -72,13 +98,21 @@ const HomeScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fff'  },
-  subHeader: { fontSize: 14, color: '#888', textAlign: 'center', marginBottom: 16 },
+  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
+  subHeader: {
+    fontSize: 14,
+    color: "#888",
+    textAlign: "center",
+    marginBottom: 16,
+  },
   searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-    paddingHorizontal: 1, marginBottom: 16, 
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 1,
+    marginBottom: 16,
   },
   input: { flex: 1, height: 40 },
   list: { paddingBottom: 80 },
@@ -88,10 +122,10 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#ddd',
-    justifyContent: 'center',
-    alignItems: 'center',
-  }
+    borderColor: "#ddd",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
 export default HomeScreen;
