@@ -101,6 +101,9 @@ function BookDescription({ book }) {
 /**
  * BookFooter component displays either a rent button or rental details.
  */
+/**
+ * BookFooter component displays either a rent button or rental details.
+ */
 function BookFooter({ book, onRent, rentalDetails }) {
   if (rentalDetails) {
     const startDate = new Date(rentalDetails.startDate).toDateString();
@@ -112,7 +115,7 @@ function BookFooter({ book, onRent, rentalDetails }) {
           <Text style={styles.rentalDetail}>Start: {startDate}</Text>
           <Text style={styles.rentalDetail}>End: {endDate}</Text>
           <Text style={styles.rentalDetail}>
-            Duration: {BUTLERentalDetails.rentalDays} days
+            Duration: {rentalDetails.rentalDays} days
           </Text>
         </View>
       </View>
