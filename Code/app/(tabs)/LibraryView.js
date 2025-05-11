@@ -1,7 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import BooksTab from "./BooksTab";
-import RentedTab from "./RentedTab"; // Updated import
+import RentedTab from "./RentedTab";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
@@ -28,11 +28,11 @@ const LibraryView = ({ route }) => {
         }}
       />
       <Tab.Screen
-        name="Rented" // Renamed from "Saved" to "Rented"
+        name="Rented"
         children={() => <RentedTab libraryName={libraryName} />}
         options={{
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="book-open" size={24} color={color} /> // Updated icon for "Rented"
+            <MaterialCommunityIcons name="book-open" size={24} color={color} />
           ),
         }}
       />
