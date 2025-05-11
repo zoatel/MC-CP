@@ -12,7 +12,7 @@ import {
   Alert,
   TouchableOpacity,
 } from "react-native";
-import { db, auth } from "./firebase"; // Adjust path as needed
+import { db, auth } from "@/components/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
 /**
@@ -226,11 +226,10 @@ export function BookDetailUI({ book }) {
     }
 
     try {
-      const startDate = new Date(); // Today's date
+      const startDate = new Date();
       const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + days); // Calculate end date
+      endDate.setDate(startDate.getDate() + days);
 
-      // Register the rental in users/{uid}/userRented
       const rentalData = {
         bookId: book.id,
         title: book.title,
@@ -240,7 +239,7 @@ export function BookDetailUI({ book }) {
       };
       await setDoc(doc(db, "users", userId, "userRented", book.id), rentalData);
 
-      setRentalDetails(rentalData); // Update UI immediately
+      setRentalDetails(rentalData);
       Alert.alert(
         "Success",
         `Book rented for ${days} days! You must return it by ${endDate.toDateString()}.`
@@ -276,11 +275,10 @@ export function BookDetailUI({ book }) {
   );
 }
 
-// Updated styles with improved design
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5", // Soft gray background
+    backgroundColor: "#F5F5F5", // Ensure the background is set
   },
   scrollContent: {
     padding: 20,
@@ -332,12 +330,12 @@ const styles = StyleSheet.create({
   available: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#16A34A", // Green for available
+    color: "#16A34A",
   },
   notAvailable: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#DC2626", // Red for not available
+    color: "#DC2626",
   },
   bookDetailsContainer: {
     backgroundColor: "#FFFFFF",
