@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { db, auth } from "@/components/firebase";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 
@@ -101,9 +101,6 @@ function BookDescription({ book }) {
 /**
  * BookFooter component displays either a rent button or rental details.
  */
-/**
- * BookFooter component displays either a rent button or rental details.
- */
 function BookFooter({ book, onRent, rentalDetails }) {
   if (rentalDetails) {
     const startDate = new Date(rentalDetails.startDate).toDateString();
@@ -127,11 +124,16 @@ function BookFooter({ book, onRent, rentalDetails }) {
       <Pressable
         style={({ pressed }) => [
           styles.bookButton,
-          pressed && styles.bookButtonPressed,
+          !book.available
+            ? styles.bookButtonUnavailable
+            : pressed && styles.bookButtonPressed,
         ]}
-        onPress={onRent}
+        onPress={book.available ? onRent : null}
+        disabled={!book.available}
       >
-        <Text style={styles.bookButtonText}>Rent</Text>
+        <Text style={styles.bookButtonText}>
+          {book.available ? "Rent" : "Unavailable"}
+        </Text>
       </Pressable>
     </View>
   );
@@ -201,9 +203,10 @@ function RentalModal({ visible, onClose, onConfirm }) {
 /**
  * BookDetailUI combines all components into a single screen.
  */
-export function BookDetailUI({ book, navigation }) {
+export function BookDetailUI({ book: initialBook, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [rentalDetails, setRentalDetails] = useState(null);
+  const [book, setBook] = useState(initialBook); // Local state for book
   const userId = auth.currentUser?.uid;
 
   useEffect(() => {
@@ -330,7 +333,27 @@ export function BookDetailUI({ book, navigation }) {
         endDate: endDate.toISOString(),
         rentalDays: days,
       };
-      await setDoc(doc(db, "users", userId, "userRented", book.id), rentalData);
+
+      // Update book copies in Firestore
+      const bookRef = doc(db, "books", book.id);
+      const newCopiesLeft = book.copiesLeft - 1;
+      const updatedBookData = {
+        copiesLeft: newCopiesLeft,
+        available: newCopiesLeft > 0,
+      };
+
+      // Perform both updates atomically
+      await Promise.all([
+        setDoc(doc(db, "users", userId, "userRented", book.id), rentalData),
+        updateDoc(bookRef, updatedBookData),
+      ]);
+
+      // Update local book state to reflect new copies and availability
+      setBook((prevBook) => ({
+        ...prevBook,
+        copiesLeft: newCopiesLeft,
+        available: newCopiesLeft > 0,
+      }));
 
       setRentalDetails(rentalData);
       await scheduleNotification(
@@ -343,8 +366,11 @@ export function BookDetailUI({ book, navigation }) {
         `Book rented for ${days} days! You must return it by ${endDate.toDateString()}.`
       );
     } catch (error) {
-      console.error("Error registering rental:", error);
-      Alert.alert("Error", "Failed to rent the book. Please try again.");
+      console.error("Error registering rental or updating book:", error);
+      Alert.alert(
+        "Error",
+        "Failed to rent the book or update book availability. Please try again."
+      );
     } finally {
       setModalVisible(false);
     }
@@ -376,7 +402,7 @@ export function BookDetailUI({ book, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF", // Changed to white to match the parent
+    backgroundColor: "#FFFFFF",
   },
   scrollContent: {
     padding: 20,
@@ -523,6 +549,9 @@ const styles = StyleSheet.create({
   },
   bookButtonPressed: {
     backgroundColor: "#1D4ED8",
+  },
+  bookButtonUnavailable: {
+    backgroundColor: "#DC2626",
   },
   bookButtonText: {
     color: "#FFFFFF",

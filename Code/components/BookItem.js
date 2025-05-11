@@ -11,8 +11,8 @@ import { useNavigation } from "@react-navigation/native";
 const BookItem = ({ book }) => {
   const navigation = useNavigation();
   const { width } = Dimensions.get("window");
-  const cardWidth = (width - 30) / 2;
-  const aspectRatio = 1.5;
+  const cardWidth = (width - 40) / 2;
+  const aspectRatio = 0.8;
 
   return (
     <TouchableOpacity
