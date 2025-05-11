@@ -63,13 +63,6 @@ export default function SignInScreen({ navigation }) {
       registerForPushNotificationsAsync();
     }
 
-    // Test notification on mount to verify functionality
-    scheduleNotification(
-      "Test Notification",
-      "This is a test notification to verify setup.",
-      { screen: "SignIn" }
-    );
-
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         const data = response.notification.request.content.data;
@@ -265,7 +258,7 @@ export default function SignInScreen({ navigation }) {
   return (
     <KeyboardAvoidingView
       behavior="padding"
-      keyboardVerticalOffset={Platform.OS === "android" ? 0 : 10}
+      keyboardVerticalOffset={Platform.OS === "android" ? 0 : 25}
       style={styles.container}
     >
       <ScrollView

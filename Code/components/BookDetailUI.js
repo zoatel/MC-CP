@@ -14,6 +14,17 @@ import {
 } from "react-native";
 import { db, auth } from "@/components/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
+
+// Set up notification handler
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 /**
  * BookHeader component displays the book cover and basic info.
@@ -101,7 +112,7 @@ function BookFooter({ book, onRent, rentalDetails }) {
           <Text style={styles.rentalDetail}>Start: {startDate}</Text>
           <Text style={styles.rentalDetail}>End: {endDate}</Text>
           <Text style={styles.rentalDetail}>
-            Duration: {rentalDetails.rentalDays} days
+            Duration: {BUTLERentalDetails.rentalDays} days
           </Text>
         </View>
       </View>
@@ -187,12 +198,40 @@ function RentalModal({ visible, onClose, onConfirm }) {
 /**
  * BookDetailUI combines all components into a single screen.
  */
-export function BookDetailUI({ book }) {
+export function BookDetailUI({ book, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [rentalDetails, setRentalDetails] = useState(null);
   const userId = auth.currentUser?.uid;
 
   useEffect(() => {
+    // Check if running in Expo Go
+    const isExpoGo = Constants.appOwnership === "expo";
+    console.log(
+      "Expo environment:",
+      isExpoGo ? "Expo Go" : "Development Build"
+    );
+    if (isExpoGo) {
+      console.warn(
+        "Running in Expo Go: Push notifications are not supported, and local notifications may be delayed."
+      );
+    } else {
+      registerForPushNotificationsAsync();
+    }
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data;
+        console.log("Notification response received:", data);
+        if (data && data.screen) {
+          try {
+            navigation.navigate(data.screen);
+          } catch (error) {
+            console.error("Navigation error from notification:", error);
+          }
+        }
+      }
+    );
+
     const fetchRentalDetails = async () => {
       if (!userId) return;
 
@@ -209,7 +248,58 @@ export function BookDetailUI({ book }) {
     };
 
     fetchRentalDetails();
-  }, [userId, book.id]);
+
+    return () => subscription.remove();
+  }, [userId, book.id, navigation]);
+
+  async function registerForPushNotificationsAsync() {
+    try {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      console.log("Existing notification permission status:", existingStatus);
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+        console.log("Requested notification permission status:", finalStatus);
+      }
+      if (finalStatus !== "granted") {
+        Alert.alert(
+          "Permission required",
+          "Please enable notifications in settings to receive updates."
+        );
+        return;
+      }
+      console.log("Notification permissions granted.");
+    } catch (error) {
+      console.error("Error registering for push notifications:", error);
+      Alert.alert(
+        "Error",
+        "Failed to register for notifications. Please check your settings."
+      );
+    }
+  }
+
+  async function scheduleNotification(title, body, data = {}) {
+    try {
+      console.log("Scheduling notification:", { title, body, data });
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          data,
+        },
+        trigger: { seconds: 1 },
+      });
+      console.log("Notification scheduled successfully.");
+    } catch (error) {
+      console.error("Error scheduling notification:", error);
+      Alert.alert(
+        "Error",
+        "Failed to schedule notification. Please check your notification settings."
+      );
+    }
+  }
 
   const handleRent = async (days) => {
     if (!userId) {
@@ -240,6 +330,11 @@ export function BookDetailUI({ book }) {
       await setDoc(doc(db, "users", userId, "userRented", book.id), rentalData);
 
       setRentalDetails(rentalData);
+      await scheduleNotification(
+        "Book Rented!",
+        `You have successfully rented "${book.title}" for ${days} days.`,
+        { screen: "Home" }
+      );
       Alert.alert(
         "Success",
         `Book rented for ${days} days! You must return it by ${endDate.toDateString()}.`
