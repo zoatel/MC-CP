@@ -11,7 +11,7 @@ import LibraryCard from "../../components/LibraryCard";
 import { Ionicons } from "@expo/vector-icons";
 import { commonStyles } from "@/styles/commonStyles";
 import { db, auth } from "../../components/firebase";
-import { collection, onSnapshot, doc } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDocs } from "firebase/firestore"; // Add getDocs
 
 const HomeScreen = ({ navigation }) => {
   const [libraries, setLibraries] = useState([]);
@@ -23,17 +23,32 @@ const HomeScreen = ({ navigation }) => {
 
     const unsubscribe = onSnapshot(
       collection(doc(db, "users", userId), "userLibraries"),
-      (snapshot) => {
+      async (snapshot) => {
         const userLibraryIds = snapshot.docs.map((doc) => doc.id);
         if (userLibraryIds.length > 0) {
-          onSnapshot(collection(db, "libraries"), (libSnapshot) => {
-            const allLibraries = libSnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-            const userLibraries = allLibraries.filter((lib) =>
-              userLibraryIds.includes(lib.id)
-            );
+          onSnapshot(collection(db, "libraries"), async (libSnapshot) => {
+            const libraryPromises = libSnapshot.docs
+              .filter((doc) => userLibraryIds.includes(doc.id))
+              .map(async (libDoc) => {
+                const libraryId = libDoc.id;
+                const libraryData = libDoc.data();
+                const booksCollectionRef = collection(
+                  db,
+                  "libraries",
+                  libraryId,
+                  "books"
+                );
+                const booksSnapshot = await getDocs(booksCollectionRef);
+                const bookCount = booksSnapshot.docs.length;
+
+                return {
+                  id: libraryId,
+                  title: libraryData.title,
+                  books: bookCount,
+                };
+              });
+
+            const userLibraries = await Promise.all(libraryPromises);
             setLibraries(userLibraries);
           });
         } else {

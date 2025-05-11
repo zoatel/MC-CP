@@ -38,7 +38,7 @@ const LightTheme = {
   colors: {
     ...DefaultTheme.colors,
     primary: "#2563EB",
-    background: "#F5F5F5", // Match FlatList background
+    background: "#FFFFFF",
     card: "#FFFFFF",
     text: "#1A1A1A",
     border: "#E5E5E5",
@@ -53,7 +53,7 @@ export default function TabLayout() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
         translucent={false}
-        backgroundColor="#F5F5F5" // Match FlatList background
+        backgroundColor="#FFFFFF"
         barStyle="dark-content"
       />
       <View style={styles.container}>
@@ -80,7 +80,7 @@ export default function TabLayout() {
             options={({ route }) => ({
               headerTitle: route.params.libraryName || "Library",
               headerStyle: {
-                backgroundColor: "#F5F5F5", // Match FlatList background
+                backgroundColor: "#FFFFFF",
                 elevation: 0,
                 shadowOpacity: 0,
                 borderBottomWidth: 1,
@@ -99,7 +99,7 @@ export default function TabLayout() {
             options={({ route }) => ({
               headerTitle: route.params.title || "Book Details",
               headerStyle: {
-                backgroundColor: "#F5F5F5", // Match FlatList background
+                backgroundColor: "#FFFFFF",
                 elevation: 0,
                 shadowOpacity: 0,
                 borderBottomWidth: 1,
@@ -121,10 +121,10 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#FFFFFF",
   },
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#FFFFFF",
   },
 });

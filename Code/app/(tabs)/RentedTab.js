@@ -12,7 +12,6 @@ const RentedTab = () => {
   useEffect(() => {
     if (!userId) return;
 
-    // Fetch the user's rented books from users/{uid}/userRented
     const unsubscribe = onSnapshot(
       collection(doc(db, "users", userId), "userRented"),
       async (snapshot) => {
@@ -22,7 +21,6 @@ const RentedTab = () => {
           return;
         }
 
-        // Fetch the book details for each rented book
         const bookPromises = rentedBookIds.map(async (bookId) => {
           const bookDoc = await getDoc(doc(db, "books", bookId));
           return bookDoc.exists()
@@ -61,7 +59,7 @@ const RentedTab = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5", // Match the background color from BooksTab
+    backgroundColor: "#F5F5F5",
   },
   listContent: {
     padding: 10,
