@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 16,
+    paddingTop: 20,
   },
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   subHeader: {
