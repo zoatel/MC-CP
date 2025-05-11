@@ -59,7 +59,9 @@ const BooksTab = ({ libraryId, libraryName }) => {
         keyExtractor={(item) => item.id}
         numColumns={2}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => <BookItem book={item} />}
+        renderItem={({ item }) => (
+          <BookItem book={item} libraryId={libraryId} />
+        )}
         style={{ flex: 1, backgroundColor: "#F5F5F5" }}
       />
     </View>

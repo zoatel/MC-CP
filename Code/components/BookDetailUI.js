@@ -203,7 +203,7 @@ function RentalModal({ visible, onClose, onConfirm }) {
 /**
  * BookDetailUI combines all components into a single screen.
  */
-export function BookDetailUI({ book: initialBook, navigation }) {
+export function BookDetailUI({ book: initialBook, libraryId, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [rentalDetails, setRentalDetails] = useState(null);
   const [book, setBook] = useState(initialBook); // Local state for book
@@ -332,6 +332,7 @@ export function BookDetailUI({ book: initialBook, navigation }) {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         rentalDays: days,
+        libraryId: libraryId, // Add libraryId to rental data
       };
 
       // Update book copies in Firestore

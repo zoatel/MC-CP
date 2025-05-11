@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 
 function BookDetailsScreen() {
   const route = useRoute();
-  const { bookId, title, author, category } = route.params; // Get bookId from navigation
+  const { bookId, title, author, category, libraryId } = route.params; // Get bookId from navigation
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -82,7 +82,7 @@ function BookDetailsScreen() {
       style={{ flex: 1, backgroundColor: "#FFFFFF" }} // Ensure the ScrollView background is white
       contentContainerStyle={{ flexGrow: 1 }} // Ensure content fills the ScrollView
     >
-      <BookDetailUI book={book} />
+      <BookDetailUI book={book} libraryId={libraryId} />
     </ScrollView>
   );
 }

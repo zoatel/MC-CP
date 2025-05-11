@@ -39,7 +39,9 @@ const LibraryView = () => {
         />
         <Tab.Screen
           name="Rented"
-          children={() => <RentedTab libraryName={libraryName} />}
+          children={() => (
+            <RentedTab libraryId={libraryId} libraryName={libraryName} />
+          )}
           options={{
             tabBarIcon: ({ color }) => (
               <MaterialCommunityIcons

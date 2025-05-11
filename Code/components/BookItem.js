@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
-const BookItem = ({ book }) => {
+const BookItem = ({ book, libraryId }) => {
   const navigation = useNavigation();
   const { width } = Dimensions.get("window");
   const cardWidth = (width - 40) / 2;
@@ -19,6 +19,7 @@ const BookItem = ({ book }) => {
       style={[styles.bookItem, { width: cardWidth }]}
       onPress={() =>
         navigation.navigate("BookDetails", {
+          libraryId: libraryId,
           bookId: book.id,
           title: book.title,
           author: book.author,

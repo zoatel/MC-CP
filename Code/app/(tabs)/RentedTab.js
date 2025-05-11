@@ -5,13 +5,15 @@ import { commonStyles } from "../../styles/commonStyles";
 import { db, auth } from "../../components/firebase";
 import { collection, onSnapshot, doc, getDoc } from "firebase/firestore";
 
-const RentedTab = () => {
+const RentedTab = ({ libraryId, libraryName }) => {
   const [rentedBooks, setRentedBooks] = useState([]);
   const userId = auth.currentUser?.uid;
 
   useEffect(() => {
-    if (!userId) {
-      console.log("No user ID found, skipping Firestore subscription.");
+    if (!userId || !libraryId) {
+      console.log(
+        "No user ID or library ID found, skipping Firestore subscription."
+      );
       setRentedBooks([]);
       return;
     }
@@ -20,8 +22,11 @@ const RentedTab = () => {
       collection(doc(db, "users", userId), "userRented"),
       async (snapshot) => {
         try {
-          const rentedBookIds = snapshot.docs.map((doc) => doc.data().bookId);
-          console.log("Rented book IDs:", rentedBookIds);
+          // Filter rentals by libraryId
+          const rentedBookIds = snapshot.docs
+            .filter((doc) => doc.data().libraryId === libraryId)
+            .map((doc) => doc.data().bookId);
+          console.log("Rented book IDs for library:", rentedBookIds);
 
           if (rentedBookIds.length === 0) {
             setRentedBooks([]);
@@ -69,7 +74,7 @@ const RentedTab = () => {
     );
 
     return () => unsubscribe();
-  }, [userId]);
+  }, [userId, libraryId]);
 
   const renderItem = ({ item }) => {
     if (!item || !item.id) {
