@@ -32,14 +32,6 @@ import DividerWithText from "../../components/DividerWithText";
 import AuthFooter from "../../components/AuthFooter";
 import PolicyLinks from "../../components/PolicyLinks";
 
-// Note: expo-notifications requires a development build for full functionality (push notifications).
-// In Expo Go, only local notifications are supported, which may introduce delays.
-// To set up a development build:
-// 1. Install EAS CLI: npm install -g eas-cli
-// 2. Run: eas build --platform all --profile development
-// 3. Use the development client: npx expo start --dev-client
-// See https://docs.expo.dev/develop/development-builds/introduction/
-
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -57,6 +49,7 @@ export default function SignInScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Check if running in Expo Go
     const isExpoGo = Constants.appOwnership === "expo";
     console.log(
       "Expo environment:",
@@ -70,16 +63,7 @@ export default function SignInScreen({ navigation }) {
       registerForPushNotificationsAsync();
     }
 
-    // Add keyboard event listeners
-    const keyboardDidShow = Keyboard.addListener("keyboardDidShow", () => {
-      console.log("Keyboard shown");
-    });
-
-    const keyboardDidHide = Keyboard.addListener("keyboardDidHide", () => {
-      console.log("Keyboard hidden");
-      setEmail(email); // Trigger re-render to reset layout
-    });
-
+    // Test notification on mount to verify functionality
     scheduleNotification(
       "Test Notification",
       "This is a test notification to verify setup.",
@@ -100,11 +84,7 @@ export default function SignInScreen({ navigation }) {
       }
     );
 
-    return () => {
-      subscription.remove();
-      keyboardDidShow.remove();
-      keyboardDidHide.remove();
-    };
+    return () => subscription.remove();
   }, []);
 
   async function registerForPushNotificationsAsync() {
@@ -285,7 +265,7 @@ export default function SignInScreen({ navigation }) {
   return (
     <KeyboardAvoidingView
       behavior="padding"
-      keyboardVerticalOffset={Platform.OS === "android" ? 0 : 20}
+      keyboardVerticalOffset={Platform.OS === "android" ? 0 : 10}
       style={styles.container}
     >
       <ScrollView
