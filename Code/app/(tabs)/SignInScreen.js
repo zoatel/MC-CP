@@ -14,8 +14,16 @@ import {
 } from "react-native";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
-import { auth, googleProvider, facebookProvider } from "../../components/firebase";
-import { signInWithEmailAndPassword, signInWithPopup, sendPasswordResetEmail } from "firebase/auth";
+import {
+  auth,
+  googleProvider,
+  facebookProvider,
+} from "../../components/firebase";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import InputField from "../../components/InputField";
 import AuthButton from "../../components/AuthButton";
 import SocialLogin from "../../components/SocialLogin";
@@ -48,36 +56,60 @@ export default function SignInScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check if running in Expo Go
     const isExpoGo = Constants.appOwnership === "expo";
-    console.log("Expo environment:", isExpoGo ? "Expo Go" : "Development Build");
+    console.log(
+      "Expo environment:",
+      isExpoGo ? "Expo Go" : "Development Build"
+    );
     if (isExpoGo) {
-      console.warn("Running in Expo Go: Push notifications are not supported, and local notifications may be delayed.");
+      console.warn(
+        "Running in Expo Go: Push notifications are not supported, and local notifications may be delayed."
+      );
     } else {
       registerForPushNotificationsAsync();
     }
 
-    // Test notification on mount to verify functionality
-    scheduleNotification("Test Notification", "This is a test notification to verify setup.", { screen: "SignIn" });
-
-    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-      const data = response.notification.request.content.data;
-      console.log("Notification response received:", data);
-      if (data && data.screen) {
-        try {
-          navigation.navigate(data.screen);
-        } catch (error) {
-          console.error("Navigation error from notification:", error);
-        }
-      }
+    // Add keyboard event listeners
+    const keyboardDidShow = Keyboard.addListener("keyboardDidShow", () => {
+      console.log("Keyboard shown");
     });
 
-    return () => subscription.remove();
+    const keyboardDidHide = Keyboard.addListener("keyboardDidHide", () => {
+      console.log("Keyboard hidden");
+      setEmail(email); // Trigger re-render to reset layout
+    });
+
+    scheduleNotification(
+      "Test Notification",
+      "This is a test notification to verify setup.",
+      { screen: "SignIn" }
+    );
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data;
+        console.log("Notification response received:", data);
+        if (data && data.screen) {
+          try {
+            navigation.navigate(data.screen);
+          } catch (error) {
+            console.error("Navigation error from notification:", error);
+          }
+        }
+      }
+    );
+
+    return () => {
+      subscription.remove();
+      keyboardDidShow.remove();
+      keyboardDidHide.remove();
+    };
   }, []);
 
   async function registerForPushNotificationsAsync() {
     try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
       console.log("Existing notification permission status:", existingStatus);
       let finalStatus = existingStatus;
       if (existingStatus !== "granted") {
@@ -86,13 +118,19 @@ export default function SignInScreen({ navigation }) {
         console.log("Requested notification permission status:", finalStatus);
       }
       if (finalStatus !== "granted") {
-        Alert.alert("Permission required", "Please enable notifications in settings to receive updates.");
+        Alert.alert(
+          "Permission required",
+          "Please enable notifications in settings to receive updates."
+        );
         return;
       }
       console.log("Notification permissions granted.");
     } catch (error) {
       console.error("Error registering for push notifications:", error);
-      Alert.alert("Error", "Failed to register for notifications. Please check your settings.");
+      Alert.alert(
+        "Error",
+        "Failed to register for notifications. Please check your settings."
+      );
     }
   }
 
@@ -110,7 +148,10 @@ export default function SignInScreen({ navigation }) {
       console.log("Notification scheduled successfully.");
     } catch (error) {
       console.error("Error scheduling notification:", error);
-      Alert.alert("Error", "Failed to schedule notification. Please check your notification settings.");
+      Alert.alert(
+        "Error",
+        "Failed to schedule notification. Please check your notification settings."
+      );
     }
   }
 
@@ -143,7 +184,11 @@ export default function SignInScreen({ navigation }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Remember me:", rememberMe);
-      await scheduleNotification("Welcome Back!", `Successfully signed in as ${email}`, { screen: "Home" });
+      await scheduleNotification(
+        "Welcome Back!",
+        `Successfully signed in as ${email}`,
+        { screen: "Home" }
+      );
       navigation.navigate("Home");
     } catch (error) {
       console.log("Sign-in error code:", error.code);
@@ -171,7 +216,11 @@ export default function SignInScreen({ navigation }) {
     setLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
-      await scheduleNotification("Welcome Back!", "Successfully signed in with Google", { screen: "Home" });
+      await scheduleNotification(
+        "Welcome Back!",
+        "Successfully signed in with Google",
+        { screen: "Home" }
+      );
       navigation.navigate("Home");
     } catch (error) {
       console.error("Google Sign-In Error:", error);
@@ -185,7 +234,11 @@ export default function SignInScreen({ navigation }) {
     setLoading(true);
     try {
       await signInWithPopup(auth, facebookProvider);
-      await scheduleNotification("Welcome Back!", "Successfully signed in with Facebook", { screen: "Home" });
+      await scheduleNotification(
+        "Welcome Back!",
+        "Successfully signed in with Facebook",
+        { screen: "Home" }
+      );
       navigation.navigate("Home");
     } catch (error) {
       console.error("Facebook Sign-In Error:", error);
@@ -204,7 +257,11 @@ export default function SignInScreen({ navigation }) {
     setLoading(true);
     try {
       await sendPasswordResetEmail(auth, email);
-      await scheduleNotification("Password Reset", "A reset link has been sent to your email.", { screen: "SignIn" });
+      await scheduleNotification(
+        "Password Reset",
+        "A reset link has been sent to your email.",
+        { screen: "SignIn" }
+      );
       Alert.alert("Success", "Password reset email sent. Check your inbox!");
     } catch (error) {
       console.error("Forgot Password Error:", error.code);
@@ -226,7 +283,8 @@ export default function SignInScreen({ navigation }) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === "android" ? 0 : 20}
       style={styles.container}
     >
       <ScrollView
@@ -318,7 +376,6 @@ export default function SignInScreen({ navigation }) {
       </ScrollView>
     </KeyboardAvoidingView>
   );
-
 }
 
 const styles = StyleSheet.create({
