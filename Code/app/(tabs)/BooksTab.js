@@ -55,18 +55,17 @@ const BooksTab = ({ libraryId, libraryName }) => {
   );
 
   return (
-    <ScrollView>
-      <View style={styles.container}>
-        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        <FlatList
-          data={filteredBooks}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => <BookItem book={item} />}
-        />
-      </View>
-    </ScrollView>
+    <View style={styles.container}>
+      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <FlatList
+        data={filteredBooks}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => <BookItem book={item} />}
+        style={{ flex: 1 }} // Add this to ensure it takes available space
+      />
+    </View>
   );
 };
 

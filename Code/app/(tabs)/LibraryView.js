@@ -1,6 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { StatusBar, StyleSheet, Platform } from "react-native";
+import { StatusBar, StyleSheet, Platform, View } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import BooksTab from "./BooksTab";
 import RentedTab from "./RentedTab";
@@ -13,7 +13,7 @@ const LibraryView = () => {
   const { libraryId, libraryName } = route.params;
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <StatusBar
         translucent={false}
         backgroundColor="#FFFFFF"
@@ -56,7 +56,7 @@ const LibraryView = () => {
           }}
         />
       </Tab.Navigator>
-    </>
+    </View>
   );
 };
 
