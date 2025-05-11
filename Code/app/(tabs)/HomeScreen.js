@@ -85,10 +85,22 @@ const HomeScreen = ({ navigation }) => {
               title={item.title}
               books={item.books}
               onPress={() =>
-                navigation.navigate("Library", {
-                  libraryId: item.id,
-                  libraryName: item.title,
-                })
+                navigation.navigate(
+                  "Library",
+                  {
+                    libraryId: item.id,
+                    libraryName: item.title,
+                    screen: "Books", // Optional: Navigate to the "Books" tab by default
+                    params: {
+                      libraryId: item.id,
+                      libraryName: item.title,
+                    },
+                  },
+                  {
+                    // Set the header title dynamically
+                    headerTitle: item.title,
+                  }
+                )
               }
             />
           )
