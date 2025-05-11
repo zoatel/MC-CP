@@ -34,22 +34,54 @@ function BookDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#FFFFFF",
+        }}
+      >
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   if (error) {
-    return <Text>{error}</Text>;
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#FFFFFF",
+        }}
+      >
+        <Text>{error}</Text>
+      </View>
+    );
   }
 
   if (!book) {
-    return <Text>No book details available</Text>;
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#FFFFFF",
+        }}
+      >
+        <Text>No book details available</Text>
+      </View>
+    );
   }
 
   return (
-    <ScrollView style={{ flex: 1, padding: 16 }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#FFFFFF" }} // Ensure the ScrollView background is white
+      contentContainerStyle={{ flexGrow: 1 }} // Ensure content fills the ScrollView
+    >
       <BookDetailUI book={book} />
     </ScrollView>
   );

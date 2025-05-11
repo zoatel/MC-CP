@@ -278,7 +278,7 @@ export function BookDetailUI({ book }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5", // Ensure the background is set
+    backgroundColor: "#FFFFFF", // Changed to white to match the parent
   },
   scrollContent: {
     padding: 20,
