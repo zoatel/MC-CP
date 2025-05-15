@@ -1,7 +1,7 @@
 # **Demo Video**
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/zoatel/MC-CP/main/assets/demo.mp4">
+  <a href="https://raw.githubusercontent.com/zoatel/MC-CP/main/demo.mp4">
     <img src="https://raw.githubusercontent.com/zoatel/MC-CP/main/UI/signin-screenshot.jpg" alt="Demo Video Thumbnail" width="50%" />
   </a>
 </p>
