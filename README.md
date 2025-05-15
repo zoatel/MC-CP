@@ -2,11 +2,10 @@
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/zoatel/MC-CP/main/demo.mp4">
-    <img src="https://raw.githubusercontent.com/zoatel/MC-CP/main/UI/signin-screenshot.jpg" alt="Demo Video Thumbnail" width="50%" />
+    <p align="center">
+      <strong>Click here to watch the demo video!</strong>
+    </p>
   </a>
-</p>
-<p align="center">
-  <strong>Click the image above to watch the demo video!</strong>
 </p>
 
 <div style="page-break-after: always;"></div>
