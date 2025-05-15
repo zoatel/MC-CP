@@ -1,10 +1,7 @@
 # **Demo Video**
 
-<p align="center">
-  <a href="https://raw.githubusercontent.com/zoatel/MC-CP/main/demo.mp4">
-      <strong>Click here to watch the demo video!</strong>
-  </a>
-</p>
+https://github.com/user-attachments/assets/aaebe52e-2a55-450a-9210-410ea4b24c36
+
 
 <div style="page-break-after: always;"></div>
 
