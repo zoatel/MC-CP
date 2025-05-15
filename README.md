@@ -2,9 +2,7 @@
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/zoatel/MC-CP/main/demo.mp4">
-    <p align="center">
       <strong>Click here to watch the demo video!</strong>
-    </p>
   </a>
 </p>
 
